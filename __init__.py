@@ -1,9 +1,3 @@
-'''
-A simple script addon for Blender 
-to rename bones in armature imported from VRoid Studio
-so it mathces with Blender bone symmetry naming.
-'''
-
 import bpy
 
 bl_info = {
@@ -15,6 +9,82 @@ bl_info = {
     "category": "Rigging",
     "tracker_url": "https://github.com/cmd410/VRoidBonesRenamer/issues",
 }
+
+ik_config = {
+    'LowerArm_L': {
+        'chain_count': 2,
+        'lock_ik_y': True,
+        'lock_ik_x': True,
+        'use_ik_limit_z': True,
+        'ik_max_z': 0,
+        'ik_min_z': -2.61799
+    },
+    'LowerArm_R': {
+        'chain_count': 2,
+        'lock_ik_y': True,
+        'lock_ik_x': True,
+        'use_ik_limit_z': True,
+        'ik_max_z': 2.61799,
+        'ik_min_z': 0
+    },
+    'LowerLeg_L': {
+        'chain_count': 2,
+        'lock_ik_y': True,
+        'lock_ik_z': True,
+        'use_ik_limit_x': True,
+        'ik_max_x': 0,
+        'ik_min_x': -2.61799
+    },
+    'LowerLeg_R': {
+        'chain_count': 2,
+        'lock_ik_y': True,
+        'lock_ik_z': True,
+        'use_ik_limit_x': True,
+        'ik_max_x': 0,
+        'ik_min_x': -2.61799
+    }
+}
+
+def setup_ik():
+    def create_ik(bone):
+        for constraint in bone.constraints:
+            if constraint.type == 'IK':
+                return constraint
+        constraint = bone.constraints.new(type='IK')
+        return constraint
+    
+    pose_bones = bpy.context.object.pose.bones
+    for bone_name, params in ik_config.items():
+        
+        bone = None
+        if bone_name in pose_bones:
+            bone = pose_bones[bone_name]
+        else:
+            name, side = bone_name.split('_')
+            for b in pose_bones:
+                if b.name.endswith(f'{side}_{name}'):
+                    bone = b
+                    break
+        if bone is None: continue
+        
+        constraint = create_ik(bone)   
+        constraint.chain_count = params.get('chain_count', 0)
+
+        bone.lock_ik_x = params.get('lock_ik_x', False)
+        bone.lock_ik_y = params.get('lock_ik_y', False)
+        bone.lock_ik_z = params.get('lock_ik_z', False)
+
+        bone.use_ik_limit_x = params.get('use_ik_limit_x', False)
+        bone.use_ik_limit_y = params.get('use_ik_limit_y', False)
+        bone.use_ik_limit_z = params.get('use_ik_limit_z', False)
+
+        bone.ik_max_x = params.get('ik_max_x', 3.14159)
+        bone.ik_min_x = params.get('ik_min_x', -3.14159)
+        bone.ik_max_y = params.get('ik_max_y', 3.14159)
+        bone.ik_min_y = params.get('ik_min_y', -3.14159)
+        bone.ik_max_z = params.get('ik_max_z', 3.14159)
+        bone.ik_min_z = params.get('ik_min_z', -3.14159)
+
 
 def simplify_symmetrize_names():
     '''Rename bones to blenders armature symmetry names'''
@@ -120,6 +190,8 @@ class VRoidSettings(bpy.types.PropertyGroup):
                                        description="Get rid of incomprehensible long names in hairjoints")
     simplify_names: bpy.props.BoolProperty(name="Simplify all bones names", default=True,
                                            description="Leave only meaningful parts of bones' names")
+    ik: bpy.props.BoolProperty(name="Setup Inverse Kinematics", default=True,
+                               description="Set up inverse kinematics for arms and legs")
 
 
 class VRoidFixOperator(bpy.types.Operator):
@@ -142,6 +214,8 @@ class VRoidFixOperator(bpy.types.Operator):
             clear_leaf_bones()
         if settings.hairjoints: 
             rename_hairjoints()
+        if settings.ik:
+            setup_ik()
         return {'FINISHED'}
     
 
@@ -164,6 +238,10 @@ class VRoidBonesPanel(bpy.types.Panel):
         box.label(text="Structure")
         box.prop(settings, "leaf_bones")
         box.prop(settings, "bone_chains")
+
+        box = self.layout.box()
+        box.label(text="Extra")
+        box.prop(settings, "ik")
 
         self.layout.operator('bones.vroid_fix')
 
