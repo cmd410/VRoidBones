@@ -1,5 +1,5 @@
 import bpy
-from .constraints import unique_constraint
+from .util import unique_constraint
 
 ik_config = {
     'LowerArm_L': {

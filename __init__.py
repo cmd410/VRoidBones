@@ -1,5 +1,7 @@
 import bpy
+from .util import *
 from .inverse_kinematics import setup_ik
+
 
 bl_info = {
     "name": "VRoid Bones",
@@ -32,12 +34,6 @@ def simplify_symmetrize_names():
         if settings.symmetrize: bone.name = f'{name}_{side}'
 
 
-def resize_root(bone):
-    bone.select_tail = True
-    bpy.ops.transform.translate(value=(0,0,-bone.length * 0.8))
-    bone.select_tail = False
-
-
 def fix_bones_chains():
     '''Put tails of bones in chain to the head of child bone
        And connect them properly...'''
@@ -52,40 +48,18 @@ def fix_bones_chains():
         bpy.ops.transform.translate(value=offset)
         bone.select_tail = False
         
-        # Connect bones
         if bone.name.lower() == 'root': 
-            resize_root(bone)
+            bone.select_tail = True
+            bpy.ops.transform.translate(value=(0,0,-bone.length * 0.8))
+            bone.select_tail = False
             continue
+        # Connect bones
         bones.active = bone
         children[0].select = True
         bpy.ops.armature.parent_set(type='CONNECTED')
         bpy.ops.armature.select_all(action='DESELECT')
 
-def get_children(parent):
-    l = []
-    for obj in bpy.context.scene.objects:
-        if obj.name == parent.name: continue
-        if obj.parent.name == parent.name:
-            l.append(obj)
-    return l
 
-def bone_has_effect(bone):
-    '''Check if bone has vertex groups attached to it'''
-    armature = bpy.context.object
-    children = get_children(armature)
-    for obj in children:
-        me = obj.data
-        vg_id = None
-        for i in obj.vertex_groups:
-            if i.name == bone.name:
-                vg_id = i.index
-                break
-        if vg_id is None:
-            continue
-        for vertex in me.vertices:
-            if i.index in list([vg.group for vg in vertex.groups]):
-                return True
-    return False
 
 
 def clear_leaf_bones():
