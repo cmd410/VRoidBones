@@ -37,6 +37,9 @@ ik_config = {
 }
 
 def setup_ik():
+    bpy.ops.object.posemode_toggle()   # This lines needed to "apply" bones from edit mode
+    bpy.ops.object.editmode_toggle()   # or else constraints won't appear for some reason
+
     pose_bones = bpy.context.object.pose.bones
     for bone_name, params in ik_config.items():
         
