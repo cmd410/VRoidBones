@@ -7,7 +7,7 @@ bl_info = {
     "name": "VRoid Bones",
     "description": "Make it pretty button for VRoid skeletons.",
     "author": "Crystal Melting Dot",
-    "version": (1, 1),
+    "version": (1, 2),
     "blender": (2, 80, 0),
     "category": "Rigging",
     "tracker_url": "https://github.com/cmd410/VRoidBonesRenamer/issues",
