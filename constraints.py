@@ -1,5 +1,8 @@
+from itertools import product
+
 import bpy
-from .util import unique_constraint
+
+from .util import unique_constraint, get_pose_bone
 
 ik_config = {
     'LowerArm_L': {
@@ -36,22 +39,17 @@ ik_config = {
     }
 }
 
-def setup_ik():
+def apply_edit_bones():
     bpy.ops.object.posemode_toggle()   # This lines needed to "apply" bones from edit mode
     bpy.ops.object.editmode_toggle()   # or else constraints won't appear for some reason
+
+def setup_ik():
+    apply_edit_bones()
 
     pose_bones = bpy.context.object.pose.bones
     for bone_name, params in ik_config.items():
         
-        bone = None
-        if bone_name in pose_bones:
-            bone = pose_bones[bone_name]
-        else:
-            name, side = bone_name.split('_')
-            for b in pose_bones:
-                if b.name.endswith(f'_{side}_{name}'):
-                    bone = b
-                    break
+        bone = get_pose_bone(bone_name)
         if bone is None: continue
 
         constraint = unique_constraint(bone, 'IK')   
@@ -71,3 +69,28 @@ def setup_ik():
         bone.ik_min_y = params.get('ik_min_y', -3.14159)
         bone.ik_max_z = params.get('ik_max_z', 3.14159)
         bone.ik_min_z = params.get('ik_min_z', -3.14159)
+
+def add_finger_constraitns():
+    fingers = [
+        'Thumb', 
+        'Index', 
+        'Middle',
+        'Ring', 
+        'Little'
+        ]
+    
+    apply_edit_bones()
+    for finger, num, side in product(fingers, [2, 3], ['L', 'R']):
+        bone = get_pose_bone(f'{finger}{num}_{side}')
+        if bone is None: continue
+        constraint = unique_constraint(bone, 'COPY_ROTATION')
+        constraint.target = bpy.context.object
+        constraint.subtarget = get_pose_bone(f'{finger}{num - 1}_{side}').name
+        constraint.mix_mode = 'ADD'
+        constraint.target_space = 'LOCAL'
+        constraint.owner_space = 'LOCAL'
+        constraint.use_y = False
+        if finger == 'Thumb':
+            constraint.use_x = False
+        else:
+            constraint.use_z = False

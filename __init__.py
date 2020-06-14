@@ -1,6 +1,6 @@
 import bpy
 from .util import *
-from .inverse_kinematics import setup_ik
+from .constraints import setup_ik, add_finger_constraitns
 
 
 bl_info = {
@@ -120,6 +120,20 @@ class VRoidIKOperator(bpy.types.Operator):
     def execute(self, context):
         setup_ik()
         return {'FINISHED'}
+
+class VRoidFingersOperator(bpy.types.Operator):
+    '''Auto setup Fingers constraints'''
+    bl_idname = "bones.vroid_fingers"
+    bl_label = "Add fingers constraints"
+    bl_options = {'UNDO'}
+    
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_ARMATURE'
+    
+    def execute(self, context):
+        add_finger_constraitns()
+        return {'FINISHED'}
     
 
 class VRoidBonesPanel(bpy.types.Panel):
@@ -144,11 +158,13 @@ class VRoidBonesPanel(bpy.types.Panel):
 
         big_box.operator('bones.vroid_fix')
         big_box.operator('bones.vroid_ik')
+        big_box.operator('bones.vroid_fingers')
 
 
 classes = [
     VRoidFixOperator,
     VRoidIKOperator,
+    VRoidFingersOperator,
     VRoidBonesPanel,
     VRoidSettings
 ]

@@ -34,3 +34,20 @@ def bone_has_effect(bone):
             if i.index in list([vg.group for vg in vertex.groups]):
                 return True
     return False
+
+def get_pose_bone(bone_name):
+    pose_bones = bpy.context.object.pose.bones 
+    bone = None
+    if bone_name in pose_bones:
+        bone = pose_bones[bone_name]
+    elif '_' not in bone_name:
+        return None
+    else:
+        name, side = bone_name.split('_')
+        if side not in {'L', 'R'}:
+            return None
+        for b in pose_bones:
+            if b.name.endswith(f'_{side}_{name}'):
+                bone = b
+                break
+    return bone
