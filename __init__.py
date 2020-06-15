@@ -78,8 +78,6 @@ def fix_bones_chains():
         bpy.ops.armature.select_all(action='DESELECT')
 
 
-
-
 def clear_leaf_bones():
     '''Delete all leaf bones that don't really do anything'''
     bpy.ops.armature.select_all(action='DESELECT')
@@ -94,7 +92,6 @@ def clear_leaf_bones():
             found_leafs.add(bone.name)
             bone.select = True
             bpy.ops.armature.delete()
-    
     armature = bpy.context.object
     children = get_children(armature)
     for obj in children:
@@ -102,6 +99,7 @@ def clear_leaf_bones():
             vg = obj.vertex_groups.get(name)
             if vg is not None:
                 obj.vertex_groups.remove(vg)
+
 
 class VRoidSettings(bpy.types.PropertyGroup):
     symmetrize: bpy.props.BoolProperty(name="Fix symmetry", default=True,
@@ -166,7 +164,7 @@ class VRoidFingersOperator(bpy.types.Operator):
         add_finger_constraitns()
         self.report({'INFO'}, 'Finger constraints were setup!')
         return {'FINISHED'}
-    
+
 
 class VRoidBonesPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_vroid_panel"
