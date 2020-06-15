@@ -45,10 +45,11 @@ def simplify_symmetrize_names():
     armature = bpy.context.object
     children = get_children(armature)
     for obj in children:
-        for group in obj.vertex_groups:
-            if group.name in vg_remap.keys():
-                group.name = vg_remap.get(group.name, group.name)
-    
+        vgs = obj.vertex_groups
+        for orig, new in vg_remap.items():
+            group = vgs.get(orig)
+            if group is not None:
+                group.name = new
 
 
 def fix_bones_chains():
