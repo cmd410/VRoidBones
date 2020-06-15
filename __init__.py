@@ -18,9 +18,12 @@ def simplify_symmetrize_names():
     settings = bpy.context.scene.vroid_params
     bones = bpy.context.active_object.data.edit_bones
     n = 1
+    vg_remap = dict()
     for bone in bones[:]:
+        original_name = bone.name
         if bone.name.startswith('HairJoint-') and settings.simplify_names:
             bone.name = f'HairJoint_{n}'
+            vg_remap[original_name] = bone.name
             n += 1
             continue
         parts = bone.name.split('_')
@@ -29,9 +32,23 @@ def simplify_symmetrize_names():
         side = parts[-2]
         name = parts[-1]
         if side not in {'R', 'L'}:
-            if settings.simplify_names and name != 'end': bone.name = name
+            if settings.simplify_names and name != 'end': 
+                bone.name = name
+                vg_remap[original_name] = bone.name
             continue
-        if settings.symmetrize: bone.name = f'{name}_{side}'
+        if settings.symmetrize: 
+            bone.name = f'{name}_{side}'
+            vg_remap[original_name] = bone.name
+    
+    # Need to make sure all vertex groups are properly renamed
+    # they are not renamed automaticaly all the times for some reason
+    armature = bpy.context.object
+    children = get_children(armature)
+    for obj in children:
+        for group in obj.vertex_groups:
+            if group.name in vg_remap.keys():
+                group.name = vg_remap.get(group.name, group.name)
+    
 
 
 def fix_bones_chains():
@@ -65,15 +82,25 @@ def fix_bones_chains():
 def clear_leaf_bones():
     '''Delete all leaf bones that don't really do anything'''
     bpy.ops.armature.select_all(action='DESELECT')
+    found_leafs = set()
     for bone in bpy.context.active_object.data.edit_bones:
         children = bone.children
         if not children and bone.name.endswith('_end') and not bone_has_effect(bone):
+            found_leafs.add(bone.name)
             bone.select = True
             bpy.ops.armature.delete()
         if bone.name.startswith('HairJoint') and not bone.children and not bone_has_effect(bone):
+            found_leafs.add(bone.name)
             bone.select = True
             bpy.ops.armature.delete()
-
+    
+    armature = bpy.context.object
+    children = get_children(armature)
+    for obj in children:
+        for name in found_leafs:
+            vg = obj.vertex_groups.get(name)
+            if vg is not None:
+                obj.vertex_groups.remove(vg)
 
 class VRoidSettings(bpy.types.PropertyGroup):
     symmetrize: bpy.props.BoolProperty(name="Fix symmetry", default=True,
