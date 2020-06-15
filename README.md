@@ -3,11 +3,11 @@ Blender's "make it pretty" button for armatures imported from VRoidStudio.
 
 ----
 
-> Look at this armature this is ugly as hell!!
+Look at this armature this is ugly as hell!! Bones are __not properly connected__ to each other, have __weird names__, and does not match blender's __left/right bone naming convention__.
 
 ![](./imgs/before.png)
 
-> But... with a single button press it becomes nice and pretty
+This addon addresses exactly these issues, with a single button press armature becomes nice and pretty. Plus, it can setup inverse kinematics and finger constraints for you, so you can dive straight into animating your character!
 
 ![](./imgs/after.png)
 
@@ -19,6 +19,15 @@ Blender's "make it pretty" button for armatures imported from VRoidStudio.
 4. Click `Install...` button and choose the downloaded zip archive
 5. Check `VRoid Bones` addon in the list
 6. Enjoy!
+
+## Features
+
+- Fix bone symmetry naming
+- Simplify bones' names
+- Remove unneeded leaf bones
+- Properly connect bones
+- Setup Inverse kinematics
+- Setup fingers constraints
 
 ## Usage
 
