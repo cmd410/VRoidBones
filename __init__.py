@@ -131,6 +131,7 @@ class VRoidFixOperator(bpy.types.Operator):
             fix_bones_chains()
         if settings.leaf_bones: 
             clear_leaf_bones()
+        self.report({'INFO'}, 'Armature was fixed!')
         return {'FINISHED'}
 
 
@@ -146,7 +147,9 @@ class VRoidIKOperator(bpy.types.Operator):
     
     def execute(self, context):
         setup_ik()
+        self.report({'INFO'}, 'IK was setup!')
         return {'FINISHED'}
+
 
 class VRoidFingersOperator(bpy.types.Operator):
     '''Auto setup Fingers constraints'''
@@ -160,6 +163,7 @@ class VRoidFingersOperator(bpy.types.Operator):
     
     def execute(self, context):
         add_finger_constraitns()
+        self.report({'INFO'}, 'Finger constraints were setup!')
         return {'FINISHED'}
     
 
