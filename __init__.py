@@ -10,7 +10,7 @@ bl_info = {
     "version": (1, 2),
     "blender": (2, 80, 0),
     "category": "Rigging",
-    "tracker_url": "https://github.com/cmd410/VRoidBonesRenamer/issues",
+    "tracker_url": "https://github.com/cmd410/VRoidBones/issues",
 }
 
 def simplify_symmetrize_names():
