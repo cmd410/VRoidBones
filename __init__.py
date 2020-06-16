@@ -55,17 +55,38 @@ def simplify_symmetrize_names():
 def fix_bones_chains():
     '''Put tails of bones in chain to the head of child bone
        And connect them properly...'''
+
+    def disconnect_child(bone):
+        bone.use_connect = False
     bpy.ops.armature.select_all(action='DESELECT')
     bones = bpy.context.active_object.data.edit_bones
+    exceptions = ['Sleeve','Skirt','Bust','FaceEye',
+                  'HairJoint']
     for bone in bones:
         children = bone.children
-        if len(children) != 1:
+        if not children:
             continue
+        target = children[0]
+        chosen = True
+        if len(children) > 1:
+            chosen = False
+            for candidate in children:
+                valid = True
+                for ex in exceptions:
+                    if ex in candidate.name: 
+                        disconnect_child(candidate)
+                        valid = False
+                        break
+                if valid:
+                    target = candidate
+                    chosen = True
+                    break
+        if not chosen: continue
         bone.select_tail = True
-        offset = children[0].head - bone.tail
+        offset = target.head - bone.tail
         bpy.ops.transform.translate(value=offset)
         bone.select_tail = False
-        
+
         if bone.name.lower() == 'root': 
             bone.select_tail = True
             bpy.ops.transform.translate(value=(0,0,-bone.length * 0.8))
@@ -73,7 +94,7 @@ def fix_bones_chains():
             continue
         # Connect bones
         bones.active = bone
-        children[0].select = True
+        target.select = True
         bpy.ops.armature.parent_set(type='CONNECTED')
         bpy.ops.armature.select_all(action='DESELECT')
 
