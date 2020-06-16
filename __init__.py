@@ -204,6 +204,50 @@ class VRoidLimitsOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class VRoidCleanerOperator(bpy.types.Operator):
+    '''Remove all bones that dont have effect'''
+    bl_idname = "bones.vroid_cleanup"
+    bl_label = "Clean skeleton"
+    bl_options = {'UNDO'}
+    
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_ARMATURE'
+    
+    def execute(self, context):
+        def check_chain(root):
+            children = root.children
+            junk = list()
+            if bone_has_effect(root): return [None]
+            junk.append(root)
+            for i in children:
+                c = check_chain(i)
+                junk.extend(c)
+                if c is None:
+                    break
+            return junk
+
+        found_junk = set()
+        for bone in bpy.context.active_object.data.edit_bones:
+            if bone_has_effect(bone): continue
+            chain = check_chain(bone)
+            if not all([i is not None for i in chain]): continue
+            for i in chain:
+                found_junk.add(i.name)
+                i.select = True
+                bpy.ops.armature.delete()
+        armature = bpy.context.object
+        children = get_children(armature)
+        for obj in children:
+            for name in found_junk:
+                vg = obj.vertex_groups.get(name)
+                if vg is not None:
+                    obj.vertex_groups.remove(vg)
+
+        self.report({'INFO'}, 'Cleanup complete!')
+        return {'FINISHED'}
+
+
 class VRoidBonesPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_vroid_panel"
     bl_label = "VRoid Bones"
@@ -228,6 +272,7 @@ class VRoidBonesPanel(bpy.types.Panel):
         big_box.operator('bones.vroid_ik')
         big_box.operator('bones.vroid_fingers')
         big_box.operator('bones.vroid_rotlimits')
+        big_box.operator('bones.vroid_cleanup')
 
 
 classes = [
@@ -235,6 +280,7 @@ classes = [
     VRoidIKOperator,
     VRoidFingersOperator,
     VRoidLimitsOperator,
+    VRoidCleanerOperator,
     VRoidBonesPanel,
     VRoidSettings
 ]
