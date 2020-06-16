@@ -28,6 +28,7 @@ This addon addresses exactly these issues, with a single button press armature b
 - Properly connect bones
 - Setup Inverse kinematics
 - Setup fingers constraints
+- Setup rotation limits
 
 ## Usage
 
