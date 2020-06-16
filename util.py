@@ -41,11 +41,17 @@ def get_pose_bone(bone_name):
     if bone_name in pose_bones:
         bone = pose_bones[bone_name]
     elif '_' not in bone_name:
-        return None
+        for b in pose_bones:
+            if b.name.endswith(f'_{bone_name}'):
+                bone = b
+                break
     else:
         name, side = bone_name.split('_')
         if side not in {'L', 'R'}:
-            return None
+            for b in pose_bones:
+                if b.name.endswith(f'_{name}'):
+                    bone = b
+                    break
         for b in pose_bones:
             if b.name.endswith(f'_{side}_{name}'):
                 bone = b
