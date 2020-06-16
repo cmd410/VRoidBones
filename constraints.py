@@ -112,9 +112,24 @@ rotation_limits = {
         'max_y': 0.523599,
         'min_z': -0.523599,
         'max_z': 0.523599
+    },
+    '<fingers>':{
+        'min_x': -1.5708,
+        'max_x': 0.139626,
+        'min_y': 0,
+        'max_y': 0,
+        'min_z': -0.349066,
+        'max_z': 0.349066
     }
 }
 
+fingers = [
+    'Thumb', 
+    'Index', 
+    'Middle',
+    'Ring', 
+    'Little'
+    ]
 
 def apply_edit_bones():
     bpy.ops.object.posemode_toggle()   # This lines needed to "apply" bones from edit mode
@@ -150,14 +165,6 @@ def setup_ik():
 
 
 def add_finger_constraitns():
-    fingers = [
-        'Thumb', 
-        'Index', 
-        'Middle',
-        'Ring', 
-        'Little'
-        ]
-    
     apply_edit_bones()
     for finger, num, side in product(fingers, [2, 3], ['L', 'R']):
         bone = get_pose_bone(f'{finger}{num}_{side}')
@@ -177,9 +184,20 @@ def add_finger_constraitns():
 def add_rotation_limits():
     apply_edit_bones()
     for bone_name, params in rotation_limits.items():
+        if bone_name == '<fingers>':
+            for finger, num, side in product(fingers, [1], ['L', 'R']):
+                if finger == 'Thumb': continue
+                bone = get_pose_bone(f'{finger}{num}_{side}')
+                if bone is None: continue
+                constraint = unique_constraint(bone, 'LIMIT_ROTATION')
+                constraint.owner_space = 'LOCAL'
+                constraint.use_transform_limit = True
+                for p_name, p_value in params.items():
+                    setattr(constraint, p_name, p_value)
+                    axis = p_name.split('_')[1]
+                    setattr(constraint, f'use_limit_{axis}', True)
         bone = get_pose_bone(bone_name)
         if bone is None: continue
-
         constraint = unique_constraint(bone, 'LIMIT_ROTATION')
         constraint.owner_space = 'LOCAL'
         constraint.use_transform_limit = True
