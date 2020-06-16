@@ -39,9 +39,31 @@ ik_config = {
     }
 }
 
+
+rotation_limits = {
+    'UpperLeg_L': {
+        'min_x': -0.698132,
+        'max_x': 1.91986,
+        'min_y': -0.436332,
+        'max_y': 0.436332,
+        'min_z': -0.785398,
+        'max_z': 1.39626
+    },
+    'UpperLeg_R': {
+        'min_x': -0.698132,
+        'max_x': 1.91986,
+        'min_y': -0.436332,
+        'max_y': 0.436332,
+        'min_z': -0.785398,
+        'max_z': 1.39626
+    }
+}
+
+
 def apply_edit_bones():
     bpy.ops.object.posemode_toggle()   # This lines needed to "apply" bones from edit mode
     bpy.ops.object.editmode_toggle()   # or else constraints won't appear for some reason
+
 
 def setup_ik():
     apply_edit_bones()
@@ -70,6 +92,7 @@ def setup_ik():
         bone.ik_max_z = params.get('ik_max_z', 3.14159)
         bone.ik_min_z = params.get('ik_min_z', -3.14159)
 
+
 def add_finger_constraitns():
     fingers = [
         'Thumb', 
@@ -94,3 +117,17 @@ def add_finger_constraitns():
             constraint.use_x = False
         else:
             constraint.use_z = False
+
+def add_rotation_limits():
+    apply_edit_bones()
+    for bone_name, params in rotation_limits.items():
+        bone = get_pose_bone(bone_name)
+        if bone is None: continue
+
+        constraint = unique_constraint(bone, 'LIMIT_ROTATION')
+        constraint.owner_space = 'LOCAL'
+        constraint.use_transform_limit = True
+        for p_name, p_value in params.items():
+            setattr(constraint, p_name, p_value)
+            axis = p_name.split('_')[1]
+            setattr(constraint, f'use_limit_{axis}', True)

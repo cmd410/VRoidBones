@@ -1,6 +1,6 @@
 import bpy
 from .util import *
-from .constraints import setup_ik, add_finger_constraitns
+from .constraints import *
 
 
 bl_info = {
@@ -166,6 +166,22 @@ class VRoidFingersOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class VRoidLimitsOperator(bpy.types.Operator):
+    '''Auto setup Rotation Limits for bones'''
+    bl_idname = "bones.vroid_rotlimits"
+    bl_label = "Add Rotation limits"
+    bl_options = {'UNDO'}
+    
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_ARMATURE'
+    
+    def execute(self, context):
+        add_rotation_limits()
+        self.report({'INFO'}, 'Rotation limits were added!')
+        return {'FINISHED'}
+
+
 class VRoidBonesPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_vroid_panel"
     bl_label = "VRoid Bones"
@@ -189,12 +205,14 @@ class VRoidBonesPanel(bpy.types.Panel):
         big_box.operator('bones.vroid_fix')
         big_box.operator('bones.vroid_ik')
         big_box.operator('bones.vroid_fingers')
+        big_box.operator('bones.vroid_rotlimits')
 
 
 classes = [
     VRoidFixOperator,
     VRoidIKOperator,
     VRoidFingersOperator,
+    VRoidLimitsOperator,
     VRoidBonesPanel,
     VRoidSettings
 ]
