@@ -58,10 +58,11 @@ def fix_bones_chains():
 
     def disconnect_child(bone):
         bone.use_connect = False
+    
     bpy.ops.armature.select_all(action='DESELECT')
     bones = bpy.context.active_object.data.edit_bones
     exceptions = ['Sleeve','Skirt','Bust','FaceEye',
-                  'HairJoint']
+                  'HairJoint', 'Tops', 'Food', 'Hood']
     for bone in bones:
         children = bone.children
         if not children:
