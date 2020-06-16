@@ -85,7 +85,7 @@ def add_finger_constraitns():
         if bone is None: continue
         constraint = unique_constraint(bone, 'COPY_ROTATION')
         constraint.target = bpy.context.object
-        constraint.subtarget = get_pose_bone(f'{finger}{num - 1}_{side}').name
+        constraint.subtarget = bone.parent.name
         constraint.mix_mode = 'ADD'
         constraint.target_space = 'LOCAL'
         constraint.owner_space = 'LOCAL'
