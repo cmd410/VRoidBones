@@ -83,6 +83,8 @@ def fix_bones_chains():
                     chosen = True
                     break
         if not chosen: continue
+        if bone.name.startswith('Hand_'):
+            continue
         bone.select_tail = True
         offset = target.head - bone.tail
         bpy.ops.transform.translate(value=offset)
